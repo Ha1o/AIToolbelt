@@ -42,9 +42,19 @@ async function initPopup() {
   if (tabs && tabs[0]) {
     currentTab = tabs[0];
     
-    // Ignore Chrome internal pages
-    if (currentTab.url.startsWith('chrome://') || currentTab.url.startsWith('edge://')) {
-      starStatus.textContent = '无法收藏 Chrome 系统页面';
+    // Ignore Chrome internal pages, blank pages, and other special URLs
+    const url = currentTab.url || '';
+    const isSpecialPage = 
+      !url ||
+      url === '' ||
+      url.startsWith('chrome://') || 
+      url.startsWith('edge://') ||
+      url.startsWith('about:') ||
+      url.startsWith('chrome-extension://') ||
+      url.startsWith('edge-extension://');
+    
+    if (isSpecialPage) {
+      starStatus.textContent = '🐹 无法在此页面收藏';
       btnStar.style.pointerEvents = 'none';
       btnStar.style.opacity = '0.5';
       return;
@@ -305,7 +315,7 @@ function setupEventListeners() {
 
   // Open full dashboard panel
   btnOpenDashboard.addEventListener('click', () => {
-    chrome.tabs.create({ url: 'dashboard.html' });
+    chrome.tabs.create({ url: chrome.runtime.getURL('dashboard.html') });
     window.close(); // close popup window
   });
 
